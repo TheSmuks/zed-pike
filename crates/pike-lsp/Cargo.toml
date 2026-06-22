@@ -16,15 +16,15 @@ name = "pike_lsp"
 path = "src/lib.rs"
 
 [dependencies]
-# Host-only features. The bridge target is wasm32-wasip2 and gets
-# the workspace default (sync, macros, io-util, rt, time, fs) —
-# no `net` or `process`.
-tokio = { workspace = true, features = ["net", "process"] }
-tokio-util.workspace = true
+# Cross-platform deps. Tree-sitter is only needed on Unix
+# targets where the unix-socket transport and the analysis
+# layer are compiled in. On Windows the binary only ships the
+# `stdio` transport, which does not parse Pike, so we don't
+# pull tree-sitter (and its C runtime dependency chain that
+# would otherwise be tricky to link under MSVC).
 tower.workspace = true
 tower-lsp.workspace = true
 lsp-types.workspace = true
-tree-sitter.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 anyhow.workspace = true
@@ -34,6 +34,17 @@ tracing-subscriber.workspace = true
 once_cell.workspace = true
 parking_lot.workspace = true
 clap.workspace = true
+
+# Host-only features. `net` only ships on Unix targets; on Windows
+# the binary only supports the `stdio` transport and the language
+# server compiles without pulling in Unix-socket APIs.
+[target.'cfg(unix)'.dependencies]
+tokio = { workspace = true, features = ["net", "process"] }
+tokio-util.workspace = true
+tree-sitter.workspace = true
+
+[target.'cfg(not(unix))'.dependencies]
+tokio = { workspace = true, features = ["process"] }
 
 [build-dependencies]
 cc = "1"

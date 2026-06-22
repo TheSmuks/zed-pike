@@ -12,9 +12,12 @@
 // See `../openspec/changes/pike-lsp-foundation/` for the
 // requirements and design this crate implements.
 
+#[cfg(unix)]
 pub mod analysis;
 pub mod cli;
+#[cfg(unix)]
 pub mod daemon;
+#[cfg(unix)]
 pub mod forward;
 pub mod resource_guard;
 pub mod service;

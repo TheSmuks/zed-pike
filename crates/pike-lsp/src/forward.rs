@@ -8,6 +8,11 @@
 //   processes alive on the remote host. Users who want a shared
 //   daemon must start `pike-lsp daemon --socket <path>` explicitly
 //   (or a future explicit opt-in flag can do so with an idle TTL).
+//
+// Unix-only: there is no Windows equivalent for the Unix-socket
+// forwarding model that this binary implements.
+
+#![cfg(unix)]
 
 use std::path::Path;
 

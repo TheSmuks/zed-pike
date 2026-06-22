@@ -2,12 +2,21 @@
 //!
 //! Run with `cargo bench -p pike-lsp` (or `cargo bench --workspace`).
 //! The numbers produced here back the SLOs in `docs/perf.md`.
+//!
+//! Unix-only: the benchmark uses the `Analysis` layer, which is
+//! not compiled in on non-Unix targets. The bench target still
+//! needs a `main` symbol, so we provide a no-op for non-Unix
+//! builds.
 
+#[cfg(unix)]
 use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
+#[cfg(unix)]
 use pike_lsp::analysis::Analysis;
 
+#[cfg(unix)]
 const SMALL_PIKE: &str = "int main() { return 0; }\n";
 
+#[cfg(unix)]
 const MEDIUM_PIKE: &str = r#"
 class Demo {
   public int add(int a, int b) { return a + b; }
@@ -22,9 +31,7 @@ int main(int argc, array(string) argv) {
 }
 "#;
 
-/// Generate a synthetic source file of approximately `n_kloc` kLOC
-/// of function declarations. Useful for measuring p99 hover / symbol
-/// latency on a "10 kLOC" workspace.
+#[cfg(unix)]
 fn make_large_pike(n_kloc: usize) -> String {
     let mut out = String::with_capacity(n_kloc * 80);
     for i in 0..(n_kloc * 10) {
@@ -35,6 +42,7 @@ fn make_large_pike(n_kloc: usize) -> String {
     out
 }
 
+#[cfg(unix)]
 fn bench_parse_small(c: &mut Criterion) {
     c.bench_function("parse_small_24B", |b| {
         b.iter(|| {
@@ -44,6 +52,7 @@ fn bench_parse_small(c: &mut Criterion) {
     });
 }
 
+#[cfg(unix)]
 fn bench_parse_medium(c: &mut Criterion) {
     let src = MEDIUM_PIKE.to_string();
     c.bench_function("parse_medium_240B", |b| {
@@ -54,6 +63,7 @@ fn bench_parse_medium(c: &mut Criterion) {
     });
 }
 
+#[cfg(unix)]
 fn bench_parse_large_10kloc(c: &mut Criterion) {
     let src = make_large_pike(10);
     let size = src.len() as u64;
@@ -68,12 +78,11 @@ fn bench_parse_large_10kloc(c: &mut Criterion) {
     group.finish();
 }
 
+#[cfg(unix)]
 fn bench_hover_10kloc(c: &mut Criterion) {
     let src = make_large_pike(10);
     let a = Analysis::new();
     a.open("file:///big.pike", src.clone());
-    // The 50th function in the file: `fn_000050`. The identifier
-    // `fn_000050` starts at approximately line 50, column 4.
     let mut group = c.benchmark_group("hover_10kloc");
     group.throughput(Throughput::Elements(1));
     group.bench_function("hover_p99", |b| {
@@ -85,6 +94,7 @@ fn bench_hover_10kloc(c: &mut Criterion) {
     group.finish();
 }
 
+#[cfg(unix)]
 fn bench_symbols_10kloc(c: &mut Criterion) {
     let src = make_large_pike(10);
     let a = Analysis::new();
@@ -99,6 +109,7 @@ fn bench_symbols_10kloc(c: &mut Criterion) {
     group.finish();
 }
 
+#[cfg(unix)]
 fn bench_diagnostics_small(c: &mut Criterion) {
     let mut group = c.benchmark_group("diagnostics");
     group.bench_function("known_pp_clean", |b| {
@@ -111,16 +122,22 @@ fn bench_diagnostics_small(c: &mut Criterion) {
     group.finish();
 }
 
+#[cfg(unix)]
 criterion_group!(
     parse,
     bench_parse_small,
     bench_parse_medium,
     bench_parse_large_10kloc
 );
+#[cfg(unix)]
 criterion_group!(
     queries,
     bench_hover_10kloc,
     bench_symbols_10kloc,
     bench_diagnostics_small
 );
+#[cfg(unix)]
 criterion_main!(parse, queries);
+
+#[cfg(not(unix))]
+fn main() {}

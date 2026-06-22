@@ -2,6 +2,10 @@
 // N clients share the same `Analysis` cache (one LSP session per
 // accepted connection). See `service::build_service` for the
 // shared service factory.
+//
+// Unix-only: no portable Windows equivalent in this change.
+
+#![cfg(unix)]
 
 use std::path::Path;
 

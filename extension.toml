@@ -1,7 +1,7 @@
 id = "pike"
 name = "Pike"
 description = "Pike language support for Zed: Tree-sitter syntax highlighting first, LSP next."
-version = "0.0.1"
+version = "0.0.2"
 schema_version = 1
 authors = ["TheSmuks"]
 repository = "https://github.com/TheSmuks/zed-pike"
