@@ -11,6 +11,19 @@ Each release section lists changes by their conventional-commit type:
 
 ## [Unreleased]
 
+### Added
+- `pike-lsp` is now registered in `extension.toml` so Zed invokes the
+  WASM bridge for Pike language-server sessions.
+
+### Fixed
+- Linux SSH remote fallback now selects the Linux `pike-lsp` release
+  asset and Unix executable path from any local Zed UI host instead of
+  trying to use a host-local binary in the remote worktree.
+- Local Windows fallback now resolves the downloaded binary as
+  `pike-lsp.exe`, matching the Windows release archive.
+- Latest release verification now checks that a Windows `pike-lsp` release
+  asset exists for users installing from Windows.
+
 ## [0.0.2] - 2026-06-22
 
 ### Added
