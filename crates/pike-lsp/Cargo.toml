@@ -16,10 +16,9 @@ name = "pike_lsp"
 path = "src/lib.rs"
 
 [dependencies]
-# Host-only features. The bridge target is wasm32-wasip2 and gets
-# the workspace default (sync, macros, io-util, rt, time, fs) —
-# no `net` or `process`.
-tokio = { workspace = true, features = ["net", "process"] }
+# Cross-platform deps. The Unix-only `tokio` features (`net`) live
+# in the per-target tables below; the rest of the dependency set is
+# the same on every target.
 tokio-util.workspace = true
 tower.workspace = true
 tower-lsp.workspace = true
@@ -34,6 +33,15 @@ tracing-subscriber.workspace = true
 once_cell.workspace = true
 parking_lot.workspace = true
 clap.workspace = true
+
+# Host-only features. `net` only ships on Unix targets; on Windows
+# the binary only supports the `stdio` transport and the language
+# server compiles without pulling in Unix-socket APIs.
+[target.'cfg(unix)'.dependencies]
+tokio = { workspace = true, features = ["net", "process"] }
+
+[target.'cfg(not(unix))'.dependencies]
+tokio = { workspace = true, features = ["process"] }
 
 [build-dependencies]
 cc = "1"

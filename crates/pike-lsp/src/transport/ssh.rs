@@ -7,6 +7,11 @@
 // for selecting the transport; the server's `ssh` subcommand is
 // the thin client that talks to a `pike-lsp` already listening on
 // the local forwarded socket.
+//
+// Unix-only: SSH streamlocal forwarding relies on Unix-domain
+// sockets, which have no portable equivalent on Windows.
+
+#![cfg(unix)]
 
 use std::path::Path;
 use std::process::Stdio;
