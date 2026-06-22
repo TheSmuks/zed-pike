@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Husky commit-msg hook: run commitlint on the staged commit message.
+# Installed by `bunx husky install` and symlinked from .git/hooks/.
+set -euo pipefail
+
+if ! command -v bunx >/dev/null 2>&1; then
+  echo "commit-msg hook: bunx not found, skipping commitlint" >&2
+  exit 0
+fi
+
+bunx --bun commitlint --edit "$1"
