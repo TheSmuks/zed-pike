@@ -22,6 +22,8 @@ jobs:
   build-linux:
     name: build linux host + wasm bridge
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
@@ -63,6 +65,8 @@ jobs:
   build-windows:
     name: build windows host
     runs-on: windows-latest
+    env:
+      TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain (windows)
