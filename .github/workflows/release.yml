@@ -47,15 +47,16 @@ jobs:
       - name: Stage linux artifacts
         run: |
           set -euo pipefail
+          VERSION="${TAG#v}"
           mkdir -p out
-          STAGE="out/pike-lsp-${TAG}-x86_64-unknown-linux-gnu"
+          STAGE="out/pike-lsp-${VERSION}-x86_64-unknown-linux-gnu"
           mkdir -p "${STAGE}"
           cp target/release/pike-lsp "${STAGE}/pike-lsp"
           chmod +x "${STAGE}/pike-lsp"
-          tar -C out -czf "out/pike-lsp-${TAG}-x86_64-unknown-linux-gnu.tar.gz" \
-            "pike-lsp-${TAG}-x86_64-unknown-linux-gnu"
+          tar -C out -czf "out/pike-lsp-${VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+            "pike-lsp-${VERSION}-x86_64-unknown-linux-gnu"
           cp target/wasm32-wasip2/release/zed_pike_bridge.wasm \
-            "out/zed-pike-bridge-${TAG}.wasm"
+            "out/zed-pike-bridge-${VERSION}.wasm"
       - name: Upload linux artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -86,15 +87,15 @@ jobs:
       - name: Build pike-lsp (windows)
         run: cargo build -p pike-lsp --release
       - name: Stage windows artifacts
-        shell: bash
+        shell: pwsh
         run: |
-          set -euo pipefail
-          mkdir -p out
-          STAGE="out/pike-lsp-${TAG}-x86_64-pc-windows-msvc"
-          mkdir -p "${STAGE}"
-          cp target/release/pike-lsp.exe "${STAGE}/pike-lsp.exe"
-          (cd out && zip -r "pike-lsp-${TAG}-x86_64-pc-windows-msvc.zip" \
-            "pike-lsp-${TAG}-x86_64-pc-windows-msvc")
+          $ErrorActionPreference = "Stop"
+          $Version = $env:TAG -replace '^v', ''
+          New-Item -ItemType Directory -Force out | Out-Null
+          $Stage = "out/pike-lsp-$Version-x86_64-pc-windows-msvc"
+          New-Item -ItemType Directory -Force $Stage | Out-Null
+          Copy-Item target/release/pike-lsp.exe "$Stage/pike-lsp.exe"
+          Compress-Archive -Path $Stage -DestinationPath "out/pike-lsp-$Version-x86_64-pc-windows-msvc.zip" -Force
       - name: Upload windows artifacts
         uses: actions/upload-artifact@v4
         with:

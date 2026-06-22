@@ -80,7 +80,9 @@ returns a `Command { command, args: ["stdio"] }`. Resolution order:
    remote worktree's PATH; the bridge never invokes `ssh` itself.
 2. Cached auto-downloaded binary.
 3. Fresh auto-download from the latest `TheSmuks/zed-pike` GitHub
-   release, selected by `current_platform()`.
+   release, selected for the worktree execution platform. A Windows UI
+   connected to a Linux SSH worktree selects the Linux asset; a local
+   Windows worktree selects the Windows `.zip` and `pike-lsp.exe`.
 
 The bridge must not select `forward` or `daemon` by default. Either is
 only correct behind an explicit Zed extension setting.
@@ -107,7 +109,9 @@ runs in `main` and exits the process when its memory budget is exceeded.
 Zed owns remote remoting. When the user opens a remote SSH worktree, Zed
 launches `language_server_command`'s `command` inside that remote
 worktree. The bridge therefore returns a plain `pike-lsp stdio` command.
-The bridge must not:
+When the local UI host is Windows and the worktree is Linux, fallback
+auto-download uses the Linux release asset and the Unix `pike-lsp` filename,
+not the Windows `.zip`/`.exe` pair. The bridge must not:
 
 - invoke `ssh`,
 - manage reverse `streamlocal:` forwards,
