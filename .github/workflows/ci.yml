@@ -1,0 +1,70 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CC: gcc
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: cargo test (host)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --target x86_64-unknown-linux-gnu
+          rustup target add wasm32-wasip2
+      - name: Cache cargo registry and target
+        uses: Swatinem/rust-cache@v2
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check
+      - name: cargo clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: cargo test
+        run: cargo test --workspace
+
+  build:
+    name: build artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --target x86_64-unknown-linux-gnu
+          rustup target add wasm32-wasip2
+      - name: Build pike-lsp (host)
+        run: cargo build -p pike-lsp --release
+      - name: Build zed-pike-bridge (wasm32-wasip2)
+        run: cargo build -p zed-pike-bridge --target wasm32-wasip2 --release
+      - name: Upload pike-lsp binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: pike-lsp-x86_64-unknown-linux-gnu
+          path: target/release/pike-lsp
+      - name: Upload zed-pike-bridge.wasm
+        uses: actions/upload-artifact@v4
+        with:
+          name: zed-pike-bridge.wasm
+          path: target/wasm32-wasip2/release/zed_pike_bridge.wasm
+
+  perf:
+    name: performance SLO check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --target x86_64-unknown-linux-gnu
+          rustup target add wasm32-wasip2
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Build & benchmark
+        run: |
+          cargo build -p pike-lsp --release
+          ./scripts/perf-smoke.sh

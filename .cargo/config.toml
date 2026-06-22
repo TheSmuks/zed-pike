@@ -1,0 +1,5 @@
+# `cargo build` and `cargo test` default to the host. The bridge
+# crate is built with `cargo build --target wasm32-wasip2` from
+# CI; see .github/workflows/ci.yml.
+#
+# Targets pinned for the bridge are listed in rust-toolchain.toml.

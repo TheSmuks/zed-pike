@@ -4,3 +4,5 @@ tree-sitter-pike/bindings/
 tree-sitter-pike/build/
 target/
 .DS_Store
+*.wasm
+Cargo.lock.bak
