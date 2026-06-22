@@ -27,8 +27,8 @@ pub async fn serve(socket: &Path, idle_timeout: Duration) -> anyhow::Result<()> 
             socket.display()
         );
     }
-    let listener = UnixListener::bind(socket)
-        .with_context(|| format!("bind {}", socket.display()))?;
+    let listener =
+        UnixListener::bind(socket).with_context(|| format!("bind {}", socket.display()))?;
     tracing::info!(?socket, ?idle_timeout, "pike-lsp: daemon listening");
 
     let analysis = Arc::new(Analysis::new());

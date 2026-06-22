@@ -8,8 +8,6 @@ pub async fn serve() -> anyhow::Result<()> {
     let (service, loopback) = build_service();
     let stdin = tokio::io::stdin();
     let stdout = tokio::io::stdout();
-    Server::new(stdin, stdout, loopback)
-        .serve(service)
-        .await;
+    Server::new(stdin, stdout, loopback).serve(service).await;
     Ok(())
 }

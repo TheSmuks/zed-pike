@@ -40,7 +40,10 @@ impl LanguageServer for PikeLanguageServer {
 
     async fn initialized(&self, _: InitializedParams) {
         tracing::info!("initialized");
-        let _ = self.client.log_message(MessageType::INFO, "pike-lsp ready").await;
+        let _ = self
+            .client
+            .log_message(MessageType::INFO, "pike-lsp ready")
+            .await;
     }
 
     async fn shutdown(&self) -> JsonRpcResult<()> {
@@ -57,12 +60,12 @@ impl LanguageServer for PikeLanguageServer {
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
         if let Some(change) = params.content_changes.into_iter().next() {
             self.analysis
-                .update(&params.text_document.uri.to_string(), change.text);
+                .update(params.text_document.uri.as_ref(), change.text);
         }
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
-        self.analysis.close(&params.text_document.uri.to_string());
+        self.analysis.close(params.text_document.uri.as_ref());
     }
 
     async fn hover(&self, params: HoverParams) -> JsonRpcResult<Option<Hover>> {
@@ -93,11 +96,7 @@ impl LanguageServer for PikeLanguageServer {
     }
 
     async fn references(&self, params: ReferenceParams) -> JsonRpcResult<Option<Vec<Location>>> {
-        let uri = params
-            .text_document_position
-            .text_document
-            .uri
-            .to_string();
+        let uri = params.text_document_position.text_document.uri.to_string();
         let pos = params.text_document_position.position;
         let line = pos.line as usize;
         let col = pos.character as usize;

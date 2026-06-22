@@ -73,7 +73,7 @@ impl PikeBridge {
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
         );
         let release = zed::latest_github_release(
-            "TheSmuks/pike-lsp",
+            "TheSmuks/zed-pike",
             zed::GithubReleaseOptions {
                 require_assets: true,
                 pre_release: false,
@@ -91,7 +91,7 @@ impl PikeBridge {
             },
             os = match platform {
                 zed::Os::Mac => "apple-darwin",
-                zed::Os::Linux => "unknown-linux-musl",
+                zed::Os::Linux => "unknown-linux-gnu",
                 zed::Os::Windows => "pc-windows-msvc",
             },
             ext = match platform {

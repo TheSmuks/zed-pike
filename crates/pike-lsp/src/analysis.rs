@@ -40,6 +40,12 @@ struct DocumentState {
     ast: Option<PositionStrippedAst>,
 }
 
+impl Default for Analysis {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Analysis {
     pub fn new() -> Self {
         Self {
@@ -63,12 +69,14 @@ impl Analysis {
 
     pub fn update(&self, uri: &str, text: String) {
         let mut docs = self.docs.write();
-        let entry = docs.entry(uri.to_string()).or_insert_with(|| DocumentState {
-            text: String::new(),
-            version: 0,
-            tree: None,
-            ast: None,
-        });
+        let entry = docs
+            .entry(uri.to_string())
+            .or_insert_with(|| DocumentState {
+                text: String::new(),
+                version: 0,
+                tree: None,
+                ast: None,
+            });
         entry.version = entry.version.saturating_add(1);
         entry.text = text;
         let (tree, ast) = parse_and_strip(&entry.text);
@@ -91,9 +99,7 @@ impl Analysis {
         self.with(uri, |doc| {
             let ast = doc.ast.as_ref()?;
             let target = ast.identifier_at(line, col)?;
-            let kind = ast
-                .symbol_kind(&target)
-                .unwrap_or(SymbolKind::VARIABLE);
+            let kind = ast.symbol_kind(&target).unwrap_or(SymbolKind::VARIABLE);
             Some(Hover {
                 contents: tower_lsp::lsp_types::HoverContents::Scalar(
                     tower_lsp::lsp_types::MarkedString::String(format!(
@@ -105,33 +111,28 @@ impl Analysis {
         })?
     }
 
-    pub fn definition(
-        &self,
-        uri: &str,
-        line: usize,
-        col: usize,
-    ) -> Option<GotoDefinitionResponse> {
+    pub fn definition(&self, uri: &str, line: usize, col: usize) -> Option<GotoDefinitionResponse> {
         let target = self.with(uri, |doc| {
-            doc.ast
-                .as_ref()
-                .and_then(|a| a.identifier_at(line, col))
+            doc.ast.as_ref().and_then(|a| a.identifier_at(line, col))
         })??;
         self.with(uri, |doc| {
             let ast = doc.ast.as_ref()?;
             ast.declaration_of(&target).and_then(|(l, c)| {
-                Url::parse(uri).ok().map(|parsed| GotoDefinitionResponse::Scalar(Location {
-                    uri: parsed,
-                    range: Range {
-                        start: Position {
-                            line: l as u32,
-                            character: c as u32,
+                Url::parse(uri).ok().map(|parsed| {
+                    GotoDefinitionResponse::Scalar(Location {
+                        uri: parsed,
+                        range: Range {
+                            start: Position {
+                                line: l as u32,
+                                character: c as u32,
+                            },
+                            end: Position {
+                                line: l as u32,
+                                character: (c + target.len()) as u32,
+                            },
                         },
-                        end: Position {
-                            line: l as u32,
-                            character: (c + target.len()) as u32,
-                        },
-                    },
-                }))
+                    })
+                })
             })
         })?
     }
@@ -167,10 +168,9 @@ impl Analysis {
         .collect()
     }
 
+    #[allow(deprecated)]
     pub fn document_symbols(&self, uri: &str) -> Option<DocumentSymbolResponse> {
-        let symbols = self.with(uri, |d| {
-            d.ast.as_ref().map(|a| a.top_level_symbols())
-        })??;
+        let symbols = self.with(uri, |d| d.ast.as_ref().map(|a| a.top_level_symbols()))??;
         Some(DocumentSymbolResponse::Flat(
             symbols
                 .into_iter()
@@ -218,7 +218,10 @@ impl Analysis {
 
 fn parse_and_strip(text: &str) -> (Option<Tree>, Option<PositionStrippedAst>) {
     let mut parser = Parser::new();
-    if parser.set_language(&crate::transport::pike_language()).is_err() {
+    if parser
+        .set_language(&crate::transport::pike_language())
+        .is_err()
+    {
         return (None, None);
     }
     let tree = match parser.parse(text, None) {
@@ -264,7 +267,10 @@ impl PositionStrippedAst {
             .iter()
             .rev()
             .find(|n| {
-                n.kind == "identifier" && n.line == line && n.col <= col && col < n.col + n.text.len()
+                n.kind == "identifier"
+                    && n.line == line
+                    && n.col <= col
+                    && col < n.col + n.text.len()
             })
             .map(|n| n.text.clone())
     }
@@ -289,7 +295,12 @@ impl PositionStrippedAst {
             .find(|n| {
                 matches!(
                     n.kind.as_str(),
-                    "function_decl" | "class_decl" | "enum_decl" | "typedef_decl" | "variable_decl" | "constant_decl"
+                    "function_decl"
+                        | "class_decl"
+                        | "enum_decl"
+                        | "typedef_decl"
+                        | "variable_decl"
+                        | "constant_decl"
                 ) && n.text == name
             })
             .map(|n| (n.line, n.col))
@@ -309,7 +320,12 @@ impl PositionStrippedAst {
             .filter(|n| {
                 matches!(
                     n.kind.as_str(),
-                    "function_decl" | "class_decl" | "enum_decl" | "typedef_decl" | "variable_decl" | "constant_decl"
+                    "function_decl"
+                        | "class_decl"
+                        | "enum_decl"
+                        | "typedef_decl"
+                        | "variable_decl"
+                        | "constant_decl"
                 )
             })
             .map(|n| {
@@ -355,17 +371,13 @@ fn collect(node: Node, src: &[u8], flat: &mut Vec<AstNode>) {
     flat.push(AstNode {
         kind: node.kind().to_string(),
         text,
-        line: start.row as usize,
-        col: start.column as usize,
+        line: start.row,
+        col: start.column,
         children,
     });
 }
 
-fn collect_parse_errors(
-    node: Node,
-    src: &[u8],
-    out: &mut Vec<tower_lsp::lsp_types::Diagnostic>,
-) {
+fn collect_parse_errors(node: Node, src: &[u8], out: &mut Vec<tower_lsp::lsp_types::Diagnostic>) {
     if node.is_error() || node.is_missing() {
         let start = node.start_position();
         let end = node.end_position();
@@ -398,10 +410,7 @@ fn collect_parse_errors(
     }
 }
 
-fn collect_preprocessor_diagnostics(
-    text: &str,
-    out: &mut Vec<tower_lsp::lsp_types::Diagnostic>,
-) {
+fn collect_preprocessor_diagnostics(text: &str, out: &mut Vec<tower_lsp::lsp_types::Diagnostic>) {
     // Pike 8.0.1116 preprocessor directive set, sourced from
     // pikelang/Pike/refdoc/preprocessor.xml
     // <section title="Preprocessor Directives">. The leading `#`
@@ -491,10 +500,7 @@ mod tests {
         let a = Analysis::new();
         a.update("file:///x.pike", "int x = 1;\n".to_string());
         let first = a.with("file:///x.pike", |d| d.ast.clone()).flatten();
-        a.update(
-            "file:///x.pike",
-            "// a comment\nint x = 1;\n".to_string(),
-        );
+        a.update("file:///x.pike", "// a comment\nint x = 1;\n".to_string());
         let second = a.with("file:///x.pike", |d| d.ast.clone()).flatten();
         // The position-stripped AST has no byte ranges; adding a
         // comment only changes the line/column of the existing

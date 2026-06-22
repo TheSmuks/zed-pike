@@ -18,8 +18,8 @@ pub async fn serve(socket: &Path) -> anyhow::Result<()> {
             socket.display()
         );
     }
-    let listener = UnixListener::bind(socket)
-        .with_context(|| format!("bind {}", socket.display()))?;
+    let listener =
+        UnixListener::bind(socket).with_context(|| format!("bind {}", socket.display()))?;
     tracing::info!(?socket, "pike-lsp: unix-socket listening");
 
     loop {

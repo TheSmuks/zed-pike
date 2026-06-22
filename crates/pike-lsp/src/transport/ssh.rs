@@ -15,11 +15,7 @@ use anyhow::Context;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::UnixStream;
 
-pub async fn serve(
-    host: &str,
-    remote_socket: &Path,
-    local_socket: &Path,
-) -> anyhow::Result<()> {
+pub async fn serve(host: &str, remote_socket: &Path, local_socket: &Path) -> anyhow::Result<()> {
     // Connect to the local socket that the `ssh` process is
     // listening on. The caller (the bridge) is responsible for
     // spawning `ssh` with the right `-R streamlocal:...` flag; the
@@ -27,7 +23,12 @@ pub async fn serve(
     let sock = UnixStream::connect(local_socket)
         .await
         .with_context(|| format!("connect to local socket {}", local_socket.display()))?;
-    tracing::info!(?host, ?remote_socket, ?local_socket, "pike-lsp: ssh transport up");
+    tracing::info!(
+        ?host,
+        ?remote_socket,
+        ?local_socket,
+        "pike-lsp: ssh transport up"
+    );
 
     let (mut read_half, mut write_half) = sock.into_split();
 

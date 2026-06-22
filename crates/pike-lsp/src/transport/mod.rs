@@ -18,9 +18,9 @@ use std::sync::OnceLock;
 
 use tree_sitter::Language;
 
-/// `tree-sitter-pike` C-language pointer. The actual function is
-/// defined by the C parser built in `build.rs` and re-exported by
-/// the `pike_grammar` static library.
+// `tree-sitter-pike` C-language pointer. The actual function is
+// defined by the C parser built in `build.rs` and re-exported by
+// the `pike_grammar` static library.
 extern "C" {
     fn tree_sitter_pike() -> *const ();
 }
