@@ -14,6 +14,6 @@
 ## 3. Documentation and verification
 
 - [x] 3.1 Update README, architecture, and changelog docs for Windows host plus Linux SSH remote behavior.
-- [ ] 3.2 Verify or create the GitHub release asset for Windows `pike-lsp` installation.
+- [x] 3.2 Verify or create the GitHub release asset for Windows `pike-lsp` installation.
 - [x] 3.3 Run formatting, tests, clippy, bridge wasm build, and OpenSpec validation.
-- [ ] 3.4 Mark tasks complete only after corresponding checks pass.
+- [x] 3.4 Mark tasks complete only after corresponding checks pass.
