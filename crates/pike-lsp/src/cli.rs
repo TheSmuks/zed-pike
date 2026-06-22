@@ -17,6 +17,12 @@ use clap::{Parser, Subcommand};
     about = "Pike language server (LSP 3.17 over JSON-RPC 2.0)"
 )]
 pub struct Cli {
+    /// Maximum resident set size before pike-lsp self-terminates.
+    /// MiB. Set to 0 to disable. CLI wins over
+    /// PIKE_LSP_MAX_RSS_MB; default is 256.
+    #[arg(long)]
+    pub max_rss_mb: Option<u64>,
+
     #[command(subcommand)]
     pub command: Command,
 }

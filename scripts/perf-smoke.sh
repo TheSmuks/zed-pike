@@ -56,7 +56,20 @@ else
 fi
 rm -rf "$TMPDIR"
 
-# 3. Explicit daemon startup RSS remains bounded.
+# 3. Resource guard kills a deliberately over-limit stdio server.
+set +e
+GUARD_OUT=$(tail -f /dev/null | timeout 5 "$BIN" --max-rss-mb 1 stdio 2>&1)
+GUARD_RC=$?
+set -e
+if [[ "$GUARD_RC" -eq 137 ]] && echo "$GUARD_OUT" | grep -q 'resource guard'; then
+  echo 'resource guard: OK (over-limit process exited 137)'
+else
+  echo "resource guard: expected exit 137 with diagnostic, got rc=$GUARD_RC" >&2
+  echo "  got: $(echo "$GUARD_OUT" | head -c 240)" >&2
+  exit 1
+fi
+
+# 4. Explicit daemon startup RSS remains bounded.
 TMPDIR=$(mktemp -d)
 SOCK="$TMPDIR/pike-lsp.sock"
 (
@@ -78,7 +91,7 @@ SOCK="$TMPDIR/pike-lsp.sock"
 )
 rm -rf "$TMPDIR"
 
-# 4. Existing-socket forwarder round trip still works when daemon is explicit.
+# 5. Existing-socket forwarder round trip still works when daemon is explicit.
 TMPDIR=$(mktemp -d)
 SOCK="$TMPDIR/pike-lsp.sock"
 "$BIN" daemon --socket "$SOCK" --idle-timeout 5 &

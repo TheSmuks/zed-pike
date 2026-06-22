@@ -16,6 +16,7 @@ pub mod analysis;
 pub mod cli;
 pub mod daemon;
 pub mod forward;
+pub mod resource_guard;
 pub mod service;
 pub mod transport;
 

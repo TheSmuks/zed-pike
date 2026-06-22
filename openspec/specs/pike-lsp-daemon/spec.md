@@ -16,14 +16,16 @@ SHALL be shared across all connected sessions.
   daemon's RSS is at most `single_session_rss + 40 MiB`.
 
 ### Requirement: Idle auto-shutdown
-The daemon SHALL automatically shut down after an idle period
-with no connected sessions. The default idle period is 60
-seconds, configurable via `--idle-timeout <duration>`.
+The daemon SHALL automatically shut down after an idle period with no connected sessions. The default idle period is 60 seconds, configurable via `--idle-timeout <duration>`. The daemon SHALL also enforce the Pike LSP resource guard so explicit shared daemon mode cannot hoard memory indefinitely.
 
 #### Scenario: Daemon exits when no clients are connected
 - **WHEN** the last client disconnects from the daemon
-- **THEN** the daemon process exits within `--idle-timeout`
-  seconds and frees its memory.
+- **THEN** the daemon process exits within `--idle-timeout` seconds and frees its memory.
+
+#### Scenario: Runaway daemon self-terminates
+- **WHEN** an explicit daemon process exceeds its configured RSS ceiling
+- **THEN** the daemon writes the resource-guard diagnostic to stderr
+- **AND** exits with code 137.
 
 ### Requirement: Auto-start on first connection
 MUST: daemon auto-start MUST be opt-in and bounded. A `pike-lsp forward` invocation MUST NOT spawn a detached daemon unless the user explicitly requests daemon mode via a documented flag or setting. When daemon auto-start is enabled, the spawned daemon MUST use an idle timeout and MUST exit after the last client disconnects.

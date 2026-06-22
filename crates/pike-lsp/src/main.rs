@@ -2,7 +2,8 @@
 // implementation lives in `pike_lsp::*`.
 
 use pike_lsp::cli::{Cli, Command};
-use pike_lsp::{daemon, forward, transport};
+use pike_lsp::resource_guard::ResourceGuardConfig;
+use pike_lsp::{daemon, forward, resource_guard, transport};
 
 use anyhow::Context;
 use clap::Parser;
@@ -13,6 +14,11 @@ async fn main() -> anyhow::Result<()> {
     init_tracing();
 
     let cli = Cli::parse();
+    let guard = ResourceGuardConfig::resolve(
+        cli.max_rss_mb,
+        std::env::var("PIKE_LSP_MAX_RSS_MB").ok().as_deref(),
+    );
+    resource_guard::spawn(guard);
 
     match cli.command {
         Command::Stdio => {
@@ -30,7 +36,12 @@ async fn main() -> anyhow::Result<()> {
             remote_socket,
             local_socket,
         } => {
-            tracing::info!(?host, ?remote_socket, ?local_socket, "pike-lsp: starting ssh transport");
+            tracing::info!(
+                ?host,
+                ?remote_socket,
+                ?local_socket,
+                "pike-lsp: starting ssh transport"
+            );
             transport::ssh::serve(&host, &remote_socket, &local_socket)
                 .await
                 .context("ssh transport")?;
