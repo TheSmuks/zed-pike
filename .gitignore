@@ -1,0 +1,6 @@
+node_modules/
+tree-sitter-pike/src/
+tree-sitter-pike/bindings/
+tree-sitter-pike/build/
+target/
+.DS_Store

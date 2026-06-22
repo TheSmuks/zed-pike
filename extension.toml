@@ -1,0 +1,11 @@
+id = "pike"
+name = "Pike"
+description = "Pike language support for Zed: Tree-sitter syntax highlighting first, LSP next."
+version = "0.0.1"
+schema_version = 1
+authors = ["TheSmuks"]
+repository = "https://github.com/TheSmuks/zed-pike"
+
+[grammars.pike]
+repository = "https://github.com/TheSmuks/tree-sitter-pike"
+commit = "adacb8165dc9c7db9ca2f8d15fcb73b3c7ea8980"
