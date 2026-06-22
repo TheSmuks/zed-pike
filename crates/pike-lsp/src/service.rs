@@ -19,7 +19,7 @@ use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, ClientSocket, LanguageServer, LspService};
 
 #[cfg(not(unix))]
-use tower_lsp::{ClientSocket, LanguageServer, LspService};
+use tower_lsp::{ClientSocket, LspService};
 
 #[cfg(unix)]
 use crate::analysis::Analysis;
