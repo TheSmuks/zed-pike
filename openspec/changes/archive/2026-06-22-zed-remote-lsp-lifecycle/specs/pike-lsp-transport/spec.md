@@ -1,20 +1,4 @@
-# pike-lsp-transport Specification
-
-## Purpose
-TBD - created by archiving change pike-lsp-foundation. Update Purpose after archive.
-## Requirements
-### Requirement: Pike LSP speaks LSP 3.17 over JSON-RPC 2.0
-The Pike LSP server SHALL speak the Language Server Protocol version
-3.17 over JSON-RPC 2.0, and SHALL correctly frame messages using
-`Content-Length` headers followed by `\r\n\r\n` and a UTF-8 JSON body.
-
-#### Scenario: Initialize handshake
-- **WHEN** a client sends `initialize` with `processId`, `rootUri`,
-  and `capabilities`
-- **THEN** the server replies with a non-null `serverInfo` whose
-  `name` is `pike-lsp` and a `capabilities` object that includes
-  at least `textDocumentSync`, `hoverProvider`, and
-  `definitionProvider`.
+## MODIFIED Requirements
 
 ### Requirement: The transport layer is pluggable
 The Pike LSP server SHALL provide two required concrete transport implementations selectable at startup:
@@ -35,16 +19,3 @@ Custom SSH tunneling is not required for Zed SSH remote compatibility and MUST N
 - **WHEN** Zed opens a Pike file in an SSH remote worktree
 - **THEN** the bridge uses the stdio transport in that worktree context
 - **AND** no custom SSH reverse streamlocal forwarding is required for correctness.
-
-### Requirement: Forwarder mode is a thin proxy
-The `pike-lsp` binary SHALL support a `forward` subcommand that
-takes a `--remote` argument pointing at a Unix-socket path, opens
-the socket, and copies LSP frames in both directions between its
-own stdio and the socket without parsing them.
-
-#### Scenario: Forwarder proxy is frame-transparent
-- **WHEN** a `forward --remote /tmp/pike-lsp.sock` instance
-  receives a `textDocument/definition` request on stdin
-- **THEN** the request bytes appear unmodified on the daemon side
-  and the response bytes appear unmodified on the editor side.
-

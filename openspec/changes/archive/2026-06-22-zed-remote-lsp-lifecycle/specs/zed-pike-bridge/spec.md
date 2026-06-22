@@ -1,17 +1,4 @@
-# zed-pike-bridge Specification
-
-## Purpose
-TBD - created by archiving change pike-lsp-foundation. Update Purpose after archive.
-## Requirements
-### Requirement: The bridge registers the Pike LSP in Zed
-The Zed extension SHALL declare a `[language_servers.pike-lsp]`
-table in `extension.toml` whose `name` is `Pike LSP` and whose
-`language` is `Pike`.
-
-#### Scenario: Extension manifest lists the language server
-- **WHEN** `extension.toml` is read by Zed
-- **THEN** it contains a `[language_servers.pike-lsp]` table
-  with the required keys.
+## MODIFIED Requirements
 
 ### Requirement: The bridge selects a transport in priority order
 In `language_server_command`, the bridge SHALL resolve the server binary in this order:
@@ -34,15 +21,3 @@ After resolving the binary, the bridge SHALL default to `pike-lsp stdio`. It SHA
 - **WHEN** `language_server_command` is called without an explicit daemon opt-in setting
 - **THEN** the returned command is `pike-lsp stdio`
 - **AND** the command args do not include `forward`, `daemon`, `ssh`, `--remote`, `--remote-socket`, or `--local-socket`.
-
-### Requirement: The bridge compiles to wasm32-wasip2
-The bridge crate SHALL compile to the `wasm32-wasip2` target
-without warnings. `.cargo/config.toml` SHALL pin this target so
-`cargo build` produces a `.wasm` artifact that Zed can load.
-
-#### Scenario: Bridge build is target-clean
-- **WHEN** `cargo build --target wasm32-wasip2` is run from the
-  repo root
-- **THEN** the build produces a `.wasm` artifact and emits no
-  warnings.
-

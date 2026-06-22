@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Quick RSS / startup smoke test for `pike-lsp`.
+# Quick lifecycle / RSS smoke test for `pike-lsp`.
 # Validates the documented SLOs in docs/perf.md.
 
 set -euo pipefail
@@ -10,15 +10,53 @@ if [[ ! -x "$BIN" ]]; then
   exit 1
 fi
 
-# Frame a JSON-RPC message with the standard `Content-Length` header.
-# Each framed message is sent as a single `printf`, so the server
-# sees one message at a time and can reply.
 frame() {
   local body="$1"
   printf 'Content-Length: %d\r\n\r\n%s' "${#body}" "$body"
 }
 
-# 1. Daemon startup RSS.
+initialize_frame() {
+  frame '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{},"rootUri":null}}'
+}
+
+# 1. Default lifecycle: stdio responds to initialize and exits when stdin closes.
+STDIO_OUT=$(initialize_frame | timeout 2 "$BIN" stdio 2>/dev/null || true)
+if echo "$STDIO_OUT" | grep -q '"name":"pike-lsp"'; then
+  echo 'stdio lifecycle: OK (initialize response, stdin-owned process)'
+else
+  echo 'stdio lifecycle: MISSING initialize response' >&2
+  echo "  got: $(echo "$STDIO_OUT" | head -c 200)" >&2
+  exit 1
+fi
+
+# 2. Forwarder MUST NOT auto-start a daemon by default.
+TMPDIR=$(mktemp -d)
+MISSING_SOCK="$TMPDIR/missing.sock"
+set +e
+MISSING_OUT=$(initialize_frame | timeout 2 "$BIN" forward --remote "$MISSING_SOCK" 2>&1)
+MISSING_RC=$?
+set -e
+if [[ "$MISSING_RC" -eq 0 ]]; then
+  echo 'forward missing-socket unexpectedly succeeded' >&2
+  rm -rf "$TMPDIR"
+  exit 1
+fi
+if [[ -S "$MISSING_SOCK" ]]; then
+  echo 'forward missing-socket created a socket / daemon unexpectedly' >&2
+  rm -rf "$TMPDIR"
+  exit 1
+fi
+if echo "$MISSING_OUT" | grep -q 'does not exist'; then
+  echo 'forward missing-socket: OK (no daemon autostart)'
+else
+  echo 'forward missing-socket: missing clear error' >&2
+  echo "  got: $(echo "$MISSING_OUT" | head -c 200)" >&2
+  rm -rf "$TMPDIR"
+  exit 1
+fi
+rm -rf "$TMPDIR"
+
+# 3. Explicit daemon startup RSS remains bounded.
 TMPDIR=$(mktemp -d)
 SOCK="$TMPDIR/pike-lsp.sock"
 (
@@ -36,12 +74,11 @@ SOCK="$TMPDIR/pike-lsp.sock"
     kill -9 "$PID" 2>/dev/null || true
     exit 1
   fi
-  # Let idle-timeout close it.
   wait "$PID" || true
 )
 rm -rf "$TMPDIR"
 
-# 2. Forward round-trip with proper framing.
+# 4. Existing-socket forwarder round trip still works when daemon is explicit.
 TMPDIR=$(mktemp -d)
 SOCK="$TMPDIR/pike-lsp.sock"
 "$BIN" daemon --socket "$SOCK" --idle-timeout 5 &
@@ -52,47 +89,21 @@ for _ in 1 2 3 4 5 6 7 8 9 10; do
 done
 if [[ ! -S "$SOCK" ]]; then
   echo "daemon failed to listen" >&2
+  kill -9 "$DPID" 2>/dev/null || true
   exit 1
 fi
 
-OUT=$(
-  # Send just the initialize request and read the response before
-  # sending the shutdown. This is what an LSP client does in
-  # practice: it waits for the response before sending the next
-  # request.
-  frame '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{},"rootUri":null}}' \
-    | timeout 2 "$BIN" forward --remote "$SOCK" 2>/dev/null || true
-)
-
-# Send shutdown + exit, but those don't need to come back.
-{
-  frame '{"jsonrpc":"2.0","method":"initialized","params":{}}'
-  frame '{"jsonrpc":"2.0","id":2,"method":"shutdown","params":null}'
-  frame '{"jsonrpc":"2.0","method":"exit","params":null}'
-} | timeout 2 "$BIN" forward --remote "$SOCK" 2>/dev/null || true
-
-# Send a HUP to the daemon to terminate the test cleanly.
+OUT=$(initialize_frame | timeout 2 "$BIN" forward --remote "$SOCK" 2>/dev/null || true)
 kill -HUP "$DPID" 2>/dev/null || true
 wait "$DPID" 2>/dev/null || true
 
 if echo "$OUT" | grep -q '"serverInfo"'; then
   SERVER_NAME=$(echo "$OUT" | grep -oE '"name":"pike-lsp"' | head -n 1)
-  if [[ -n "$SERVER_NAME" ]]; then
-    echo "forward round-trip: OK ($SERVER_NAME)"
-  else
-    echo "forward round-trip: missing server name" >&2
-    kill -INT "$DPID" 2>/dev/null || true
-    wait "$DPID" 2>/dev/null || true
-    exit 1
-  fi
+  echo "forward round-trip: OK ($SERVER_NAME)"
 else
   echo "forward round-trip: MISSING initialize response" >&2
   echo "  got: $(echo "$OUT" | head -c 200)" >&2
-  kill -INT "$DPID" 2>/dev/null || true
-  wait "$DPID" 2>/dev/null || true
+  rm -rf "$TMPDIR"
   exit 1
 fi
-
-kill -INT "$DPID" 2>/dev/null || true
-wait "$DPID" 2>/dev/null || true
 rm -rf "$TMPDIR"
