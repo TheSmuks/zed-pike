@@ -11,6 +11,41 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  commitlint:
+    name: commitlint (conventional commits)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install commitlint
+        run: |
+          npm install --no-save \
+            @commitlint/cli@20 \
+            @commitlint/config-conventional@20
+      - name: Run commitlint on PR commits
+        if: github.event_name == 'pull_request'
+        run: |
+          npx commitlint --from="${{ github.event.pull_request.base.sha }}~1" \
+            --to="${{ github.event.pull_request.head.sha }}" \
+            --verbose
+      - name: Run commitlint on last commit (push)
+        if: github.event_name == 'push'
+        run: npx commitlint --from=HEAD~1 --to=HEAD --verbose
+
+  branch-name:
+    name: branch-name (conventional branches)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate branch name
+        run: bash scripts/check-branch-name.sh "${GITHUB_REF_NAME}"
+
   test:
     name: cargo test (host)
     runs-on: ubuntu-latest
