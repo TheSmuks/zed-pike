@@ -6,6 +6,11 @@
 // `idle_timeout`. See `../openspec/changes/pike-lsp-foundation/
 // specs/pike-lsp-daemon/` for the requirements this module
 // implements.
+//
+// Unix-only: the daemon's transport is a Unix-domain socket, which
+// has no direct equivalent on Windows in this change.
+
+#![cfg(unix)]
 
 use std::path::Path;
 use std::sync::Arc;

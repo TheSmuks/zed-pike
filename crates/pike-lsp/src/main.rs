@@ -1,9 +1,14 @@
 // Pike LSP: thin wrapper around the lib crate. All real
 // implementation lives in `pike_lsp::*`.
 
+#[cfg(unix)]
 use pike_lsp::cli::{Cli, Command};
+#[cfg(not(unix))]
+use pike_lsp::cli::{Cli, Command as _Command};
+use pike_lsp::resource_guard;
 use pike_lsp::resource_guard::ResourceGuardConfig;
-use pike_lsp::{daemon, forward, resource_guard, transport};
+#[cfg(unix)]
+use pike_lsp::{daemon, forward, transport};
 
 use anyhow::Context;
 use clap::Parser;
@@ -20,6 +25,7 @@ async fn main() -> anyhow::Result<()> {
     );
     resource_guard::spawn(guard);
 
+    #[cfg(unix)]
     match cli.command {
         Command::Stdio => {
             tracing::info!("pike-lsp: starting stdio transport");
@@ -60,6 +66,21 @@ async fn main() -> anyhow::Result<()> {
             daemon::serve(&socket, idle_timeout)
                 .await
                 .with_context(|| format!("daemon on {}", socket.display()))?;
+        }
+    }
+
+    #[cfg(not(unix))]
+    {
+        // Windows ships only the stdio transport. Anything else is
+        // an explicit clap error (the variant doesn't exist on this
+        // target), so we only need to handle the `Stdio` arm here.
+        match cli.command {
+            _Command::Stdio => {
+                tracing::info!("pike-lsp: starting stdio transport");
+                pike_lsp::transport::stdio::serve()
+                    .await
+                    .context("stdio transport")?;
+            }
         }
     }
 

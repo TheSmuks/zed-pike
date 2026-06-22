@@ -11,19 +11,24 @@ Each release section lists changes by their conventional-commit type:
 
 ## [Unreleased]
 
-### Changed
-- Adopted Keep-a-Changelog format and Conventional Commits.
-- Adopted the conventional-branches workflow documented in `CONTRIBUTING.md`
-  (branch names of the form `type/<scope>-<short-topic>`; protected `main`).
+## [0.0.2] - 2026-06-22
 
 ### Added
-- `CHANGELOG.md` — single source of truth for user-visible change history.
-- `docs/ARCHITECTURE.md` — single source of truth for system architecture.
-- `CONTRIBUTING.md` — branching, commit, and review conventions.
-- `commitlint.config.js` — Conventional Commits enforcement in CI.
-- `.commitlintrc.json` (legacy alias) — same configuration.
-- `scripts/check-branch-name.sh` — pre-push guard.
-- `.husky/` — local commit-msg hook invoking `commitlint`.
+- Windows host build in CI: the `pike-lsp-x86_64-pc-windows-msvc`
+  artifact is now produced on every push and pull request.
+- New `.github/workflows/release.yml` triggered by tag push (`v*`)
+  publishes a GitHub release with three artifacts:
+  `pike-lsp-<version>-x86_64-unknown-linux-gnu.tar.gz`,
+  `pike-lsp-<version>-x86_64-pc-windows-msvc.zip`, and
+  `zed-pike-bridge-<version>.wasm`. SHA-256 sums for every asset are
+  embedded in the release notes.
+- The release notes are generated from `out/SHA256SUMS` so a downstream
+  consumer can verify what they downloaded without trusting the
+  GitHub UI.
+
+### Changed
+- Bumped `extension.toml` and workspace `version` from `0.0.1` to
+  `0.0.2`.
 
 ## [0.0.1] - 2026-06-22
 
@@ -68,5 +73,6 @@ previously-released Pike language server.
 - Bridge now downloads `pike-lsp` from `TheSmuks/zed-pike` releases (Linux
   asset suffix `x86_64-unknown-linux-gnu`).
 
-[Unreleased]: https://github.com/TheSmuks/zed-pike/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/TheSmuks/zed-pike/compare/v0.0.2...HEAD
+[0.0.2]: https://github.com/TheSmuks/zed-pike/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/TheSmuks/zed-pike/releases/tag/v0.0.1
