@@ -40,3 +40,8 @@ cc = "1"
 
 [dev-dependencies]
 tokio = { version = "1.40", features = ["rt-multi-thread", "macros", "net", "io-util", "process", "sync", "time", "fs", "test-util"] }
+criterion = { version = "0.5", default-features = false, features = ["cargo_bench_support"] }
+
+[[bench]]
+name = "analysis"
+harness = false

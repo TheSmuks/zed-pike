@@ -64,7 +64,9 @@ jobs:
           rustup target add wasm32-wasip2
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
-      - name: Build & benchmark
-        run: |
-          cargo build -p pike-lsp --release
-          ./scripts/perf-smoke.sh
+      - name: Build pike-lsp
+        run: cargo build -p pike-lsp --release
+      - name: Criterion benches
+        run: cargo bench -p pike-lsp --bench analysis -- --output-format bencher
+      - name: RSS / startup smoke
+        run: bash scripts/perf-smoke.sh target/release/pike-lsp

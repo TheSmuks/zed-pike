@@ -21,17 +21,28 @@ The CI workflow runs `scripts/perf-smoke.sh` on every push. The script
 boots the server, reads `/proc/$PID/status` for `VmRSS`, and exercises
 the `daemon` and `forward` subcommands against an in-process client.
 
-The current empirical numbers (release build, x86_64-unknown-linux-gnu):
+The current empirical numbers (release build, x86_64-unknown-linux-gnu,
+Ryzen-class CPU, criterion `--quick`):
 
 ```
-daemon RSS at idle: 4852 KiB   # well under 80 MiB
+daemon RSS at idle: 4700 KiB   # well under 80 MiB SLO
 ```
 
-We do not currently measure hover / completion / symbols latency
-because the analysis layer's queries are position-stripped iterations
-of a flat in-memory node list, not a real database; once that is
-replaced with a real incremental engine (Salsa-style), the latency
-benchmarks will be added.
+Criterion benchmarks (`cargo bench -p pike-lsp --bench analysis`):
+
+```
+parse_small_24B          21.4 us   # init + parse + strip
+parse_medium_240B       339.5 us
+parse_10kloc_open         3.92 ms
+hover_10kloc_p99           5.9 us   # well under 50 ms SLO
+document_symbols_10k      31.8 us
+diagnostics_clean         22.7 us
+```
+
+Hover p99 on a 10 kLOC fixture is microseconds today; the analysis
+layer is in-memory position-stripped iteration, not a real database.
+When the real incremental engine lands, we expect the number to move
+into the millisecond range and the SLOs will still hold.
 
 ## References
 
