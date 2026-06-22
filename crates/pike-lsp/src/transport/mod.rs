@@ -20,6 +20,7 @@ pub mod unix;
 #[cfg(unix)]
 use std::sync::OnceLock;
 
+#[cfg(unix)]
 use tree_sitter::Language;
 
 // `tree-sitter-pike` C-language pointer. The actual function is
@@ -45,6 +46,7 @@ static PIKE_LANGUAGE: OnceLock<Language> = OnceLock::new();
 /// this function is unreachable because the rest of the language
 /// server still compiles: tree-sitter parsing simply returns no
 /// nodes.
+#[cfg(unix)]
 pub fn pike_language() -> Language {
     #[cfg(unix)]
     {
