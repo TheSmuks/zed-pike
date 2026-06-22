@@ -2,6 +2,11 @@
 //!
 //! Run with `cargo bench -p pike-lsp` (or `cargo bench --workspace`).
 //! The numbers produced here back the SLOs in `docs/perf.md`.
+//!
+//! Unix-only: the benchmark uses the `Analysis` layer, which is
+//! not compiled in on non-Unix targets.
+
+#![cfg(unix)]
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 use pike_lsp::analysis::Analysis;
