@@ -15,5 +15,5 @@
 
 - [x] 3.1 Update README, architecture, and changelog docs for local Windows plus Linux SSH remote behavior from any Zed host OS.
 - [x] 3.2 Verify or create the GitHub release asset for Windows `pike-lsp` installation.
-- [x] 3.3 Run formatting, tests, clippy, bridge wasm build, and OpenSpec validation.
+- [x] 3.3 Run formatting, tests, clippy, bridge package WASM build, default root WASM build, and OpenSpec validation.
 - [x] 3.4 Mark tasks complete only after corresponding checks pass.
