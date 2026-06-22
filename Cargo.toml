@@ -4,6 +4,7 @@ members = [
     "crates/pike-lsp",
     "crates/zed-pike-bridge",
 ]
+default-members = ["crates/zed-pike-bridge"]
 
 [workspace.package]
 version = "0.0.2"
