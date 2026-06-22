@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Husky pre-push hook: refuse to push a branch whose name does not
+# match the conventional-branches convention.
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+"$repo_root/scripts/check-branch-name.sh"
