@@ -11,6 +11,55 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  commitlint:
+    name: commitlint (conventional commits)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install commitlint
+        run: |
+          npm install --no-save \
+            @commitlint/cli@20 \
+            @commitlint/config-conventional@20
+      - name: Run commitlint on PR commits
+        if: github.event_name == 'pull_request'
+        run: |
+          # Lint only the commits that the PR adds on top of its base.
+          # Avoid merging or rebasing the PR head into the workflow
+          # ref, which would create a merge commit outside the PR.
+          BASE="${{ github.event.pull_request.base.ref }}"
+          git fetch --no-tags --depth=1 origin "$BASE"
+          npx commitlint --from="origin/${BASE}" \
+            --to="${{ github.event.pull_request.head.sha }}" \
+            --verbose
+      - name: Run commitlint on last commit (push)
+        if: github.event_name == 'push'
+        run: npx commitlint --from=HEAD~1 --to=HEAD --verbose
+
+  branch-name:
+    name: branch-name (conventional branches)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate branch name
+        run: |
+          # For pull_request events, GITHUB_REF_NAME is the synthetic
+          # merge ref ("<pr-number>/merge"). Validate the actual
+          # head ref instead.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            ref="${{ github.event.pull_request.head.ref }}"
+          else
+            ref="${GITHUB_REF_NAME}"
+          fi
+          bash scripts/check-branch-name.sh "$ref"
+
   test:
     name: cargo test (host)
     runs-on: ubuntu-latest
