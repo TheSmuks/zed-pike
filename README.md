@@ -10,7 +10,7 @@ Next milestone: optional LSP integration using a new, modern Pike language serve
 - Zed language config: present
 - Tree-sitter grammar: pinned to `TheSmuks/tree-sitter-pike`
 - Highlight queries: seeded from `TheSmuks/tree-sitter-pike/queries/highlights.scm`
-- LSP bridge: planned, not implemented yet
+- LSP and semantic features: out of scope for this milestone
 
 ## Development
 
