@@ -102,6 +102,33 @@ jobs:
           name: zed-pike-bridge.wasm
           path: target/wasm32-wasip2/release/zed_pike_bridge.wasm
 
+  build-windows:
+    name: build windows host
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain (windows)
+        run: |
+          rustup toolchain install stable --profile minimal --target x86_64-pc-windows-msvc
+      - name: Cache cargo target (windows)
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: cargo-windows
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check
+        shell: bash
+      - name: cargo clippy
+        run: cargo clippy -p pike-lsp --all-targets -- -D warnings
+      - name: cargo test (pike-lsp)
+        run: cargo test -p pike-lsp
+      - name: Build pike-lsp (windows)
+        run: cargo build -p pike-lsp --release
+      - name: Upload pike-lsp.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: pike-lsp-x86_64-pc-windows-msvc
+          path: target/release/pike-lsp.exe
+
   perf:
     name: performance SLO check
     runs-on: ubuntu-latest
