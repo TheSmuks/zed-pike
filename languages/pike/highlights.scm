@@ -31,7 +31,6 @@
 (integer_literal) @number
 (float_literal) @number.float
 (string_literal) @string
-(number_literal) @number
 (modifier) @keyword.modifier
 (line_comment) @comment
 (block_comment) @comment

@@ -1,6 +1,5 @@
 (block) @indent
-(compound_statement) @indent
+(parameters) @indent
 (argument_list) @indent
-(parameter_list) @indent
 "}" @outdent
 ")" @outdent
