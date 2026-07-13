@@ -2,12 +2,13 @@
 // a static library and emit cargo:rustc-link-lib=static=pike_grammar.
 //
 // Source commit is pinned to match the extension's grammar pin
-// (adacb8165dc9c7db9ca2f8d15fcb73b3c7ea8980). When the upstream
-// commit moves, update the SHA in BOTH `extension.toml` and here.
+// (a8bc7e3d6064f67e05b35cd9d8406c7a41059131, tree-sitter-pike v1.3.1).
+// When the upstream commit moves, update the SHA in `extension.toml`,
+// the `tree-sitter-pike` rev in the workspace `Cargo.toml`, and here.
 
 use std::path::PathBuf;
 
-const GRAMMAR_COMMIT: &str = "adacb8165dc9c7db9ca2f8d15fcb73b3c7ea8980";
+const GRAMMAR_COMMIT: &str = "a8bc7e3d6064f67e05b35cd9d8406c7a41059131";
 
 fn main() {
     let out_dir = PathBuf::from(std::env::var("OUT_DIR").expect("OUT_DIR set by cargo"));
