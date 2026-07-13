@@ -35,17 +35,18 @@ tokio = { version = "1.40", default-features = false, features = ["rt-multi-thre
 tokio-util = { version = "0.7", features = ["io"] }
 # LSP plumbing
 tower = { version = "0.5", features = ["util"] }
-tower-lsp = { version = "0.20" }
-lsp-types = { version = "0.95" }
+# Maintained successor to the frozen `tower-lsp` (0.20); tracks latest lsp-types.
+tower-lsp-server = { version = "0.21" }
+lsp-types = { version = "0.97" }
 # Tree-sitter Pike grammar (pinned, same commit as extension)
-tree-sitter = "0.25"
-tree-sitter-pike = { git = "https://github.com/TheSmuks/tree-sitter-pike", rev = "adacb8165dc9c7db9ca2f8d15fcb73b3c7ea8980" }
+tree-sitter = "0.26"
+tree-sitter-pike = { git = "https://github.com/TheSmuks/tree-sitter-pike", rev = "a8bc7e3d6064f67e05b35cd9d8406c7a41059131" }
 # Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # Misc
 anyhow = "1"
-thiserror = "1"
+thiserror = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 once_cell = "1"
@@ -54,7 +55,7 @@ parking_lot = "0.12"
 clap = { version = "4.5", features = ["derive"] }
 
 [dependencies]
-zed_extension_api = "0.6"
+zed_extension_api = "0.7"
 parking_lot.workspace = true
 serde.workspace = true
 serde_json.workspace = true
