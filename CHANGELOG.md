@@ -11,6 +11,35 @@ Each release section lists changes by their conventional-commit type:
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-06-23
+
+### Fixed
+- Extension activation on `.pike`, `.pmod`, and `.cmod` files. The
+  published v0.0.1 release shipped an `extension.toml` that did not
+  register the Pike LSP under `[language_servers.pike-lsp]`, so Zed
+  installed the grammar and language config but had no language
+  server entry to wire up. That left files with no language, no
+  syntax highlighting, and no semantic features. The fix landed on
+  `main` via commits #5 and #6; v0.0.3 ships them under a tagged
+  version.
+- The WASM bridge is exposed as a workspace-root package so Zed's
+  extension builder can find it (the previous layout lived at
+  `crates/zed-pike-bridge/`, which Zed's loader did not pick up).
+- The bridge now resolves the correct `pike-lsp` asset for Windows
+  and Linux remote worktrees, matching the host triples already
+  shipped on v0.0.1.
+- Tree-sitter query files in `languages/pike/` referenced node names
+  that do not exist in the maintained
+  `TheSmuks/tree-sitter-pike` grammar at the pinned commit.
+  `highlights.scm` queried `(number_literal)`; the real node names
+  are `integer_literal` and `float_literal`. `indents.scm` queried
+  `(compound_statement)` and `(parameter_list)`; the real node names
+  are `block` and `parameters`. The stale queries made Zed reject
+  each file at extension load with `Query error: Invalid node type`,
+  which silently dropped all syntax highlighting and indent rules.
+
+## [0.0.2] - 2026-06-22
+
 ### Added
 - `pike-lsp` is now registered in `extension.toml` so Zed invokes the
   WASM bridge for Pike language-server sessions.
@@ -86,6 +115,7 @@ previously-released Pike language server.
 - Bridge now downloads `pike-lsp` from `TheSmuks/zed-pike` releases (Linux
   asset suffix `x86_64-unknown-linux-gnu`).
 
-[Unreleased]: https://github.com/TheSmuks/zed-pike/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/TheSmuks/zed-pike/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/TheSmuks/zed-pike/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/TheSmuks/zed-pike/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/TheSmuks/zed-pike/releases/tag/v0.0.1
