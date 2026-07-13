@@ -34,6 +34,14 @@ Pike **8.0.1116** language support for the Zed editor, in two layers:
    previous Pike LSP/VS Code work. This repo is a clean implementation.
 5. **Reliability over features.** A missing feature is fine; a crashing or
    memory-leaking one is not. Prefer degrading gracefully to failing loud.
+6. **Never assume — always verify, and provide proof.** Do not claim something
+   works, exists, or is absent from memory or plausibility. Run it, read the
+   source, check the binary/docs, and show the evidence (command + output, file
+   + line, doc URL). "It should compile" / "there's no such tool" are not
+   acceptable; `cargo build` output and `zed-extension --help` are. When you
+   cannot verify, say so explicitly rather than guessing. For "does it install
+   in Zed?", the proof is `scripts/zed-extension-check.sh` (Zed's own CLI),
+   not an approximation.
 
 ## Repo layout
 
