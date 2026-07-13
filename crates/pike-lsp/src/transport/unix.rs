@@ -11,7 +11,7 @@ use std::path::Path;
 
 use anyhow::Context;
 use tokio::net::UnixListener;
-use tower_lsp::Server;
+use tower_lsp_server::Server;
 
 use crate::service::build_service;
 
