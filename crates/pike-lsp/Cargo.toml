@@ -23,7 +23,7 @@ path = "src/lib.rs"
 # pull tree-sitter (and its C runtime dependency chain that
 # would otherwise be tricky to link under MSVC).
 tower.workspace = true
-tower-lsp.workspace = true
+tower-lsp-server.workspace = true
 lsp-types.workspace = true
 serde.workspace = true
 serde_json.workspace = true
