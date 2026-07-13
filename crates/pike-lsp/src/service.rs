@@ -12,14 +12,14 @@
 use std::sync::Arc;
 
 #[cfg(unix)]
-use tower_lsp::jsonrpc::Result as JsonRpcResult;
+use tower_lsp_server::jsonrpc::Result as JsonRpcResult;
 #[cfg(unix)]
-use tower_lsp::lsp_types::*;
+use tower_lsp_server::lsp_types::*;
 #[cfg(unix)]
-use tower_lsp::{Client, ClientSocket, LanguageServer, LspService};
+use tower_lsp_server::{Client, ClientSocket, LanguageServer, LspService};
 
 #[cfg(not(unix))]
-use tower_lsp::{ClientSocket, LspService};
+use tower_lsp_server::{ClientSocket, LspService};
 
 #[cfg(unix)]
 use crate::analysis::Analysis;
@@ -31,7 +31,6 @@ pub struct PikeLanguageServer {
 }
 
 #[cfg(unix)]
-#[tower_lsp::async_trait]
 impl LanguageServer for PikeLanguageServer {
     async fn initialize(&self, params: InitializeParams) -> JsonRpcResult<InitializeResult> {
         tracing::info!(?params.capabilities, "initialize");
@@ -76,12 +75,12 @@ impl LanguageServer for PikeLanguageServer {
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
         if let Some(change) = params.content_changes.into_iter().next() {
             self.analysis
-                .update(params.text_document.uri.as_ref(), change.text);
+                .update(params.text_document.uri.as_str(), change.text);
         }
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
-        self.analysis.close(params.text_document.uri.as_ref());
+        self.analysis.close(params.text_document.uri.as_str());
     }
 
     async fn hover(&self, params: HoverParams) -> JsonRpcResult<Option<Hover>> {
@@ -169,23 +168,22 @@ impl PikeLanguageServer {
 // `shutdown`) and reports no document capabilities.
 // ------------------------------------------------------------------
 #[cfg(not(unix))]
-use tower_lsp::lsp_types::{
+use tower_lsp_server::lsp_types::{
     InitializeParams, InitializeResult, InitializedParams, MessageType, ServerCapabilities,
     ServerInfo,
 };
 
 #[cfg(not(unix))]
 pub struct PikeLanguageServer {
-    client: tower_lsp::Client,
+    client: tower_lsp_server::Client,
 }
 
 #[cfg(not(unix))]
-#[tower_lsp::async_trait]
-impl tower_lsp::LanguageServer for PikeLanguageServer {
+impl tower_lsp_server::LanguageServer for PikeLanguageServer {
     async fn initialize(
         &self,
         _params: InitializeParams,
-    ) -> tower_lsp::jsonrpc::Result<InitializeResult> {
+    ) -> tower_lsp_server::jsonrpc::Result<InitializeResult> {
         Ok(InitializeResult {
             capabilities: ServerCapabilities {
                 // No document capabilities. The bridge is free to
@@ -206,7 +204,7 @@ impl tower_lsp::LanguageServer for PikeLanguageServer {
             .await;
     }
 
-    async fn shutdown(&self) -> tower_lsp::jsonrpc::Result<()> {
+    async fn shutdown(&self) -> tower_lsp_server::jsonrpc::Result<()> {
         Ok(())
     }
 }

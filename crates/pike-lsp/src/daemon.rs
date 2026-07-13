@@ -20,7 +20,7 @@ use anyhow::Context;
 use parking_lot::Mutex;
 use tokio::net::UnixListener;
 use tokio::time::sleep;
-use tower_lsp::Server;
+use tower_lsp_server::Server;
 
 use crate::analysis::Analysis;
 use crate::service::{build_service_with_analysis, PikeLanguageServer};

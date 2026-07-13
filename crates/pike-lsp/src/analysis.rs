@@ -16,9 +16,9 @@
 
 use std::collections::HashMap;
 
-use tower_lsp::lsp_types::{
+use tower_lsp_server::lsp_types::{
     DocumentSymbolResponse, GotoDefinitionResponse, Hover, Location, Position, Range,
-    SymbolInformation, SymbolKind, Url,
+    SymbolInformation, SymbolKind, Uri,
 };
 use tree_sitter::{Node, Parser, Tree};
 
@@ -101,8 +101,8 @@ impl Analysis {
             let target = ast.identifier_at(line, col)?;
             let kind = ast.symbol_kind(&target).unwrap_or(SymbolKind::VARIABLE);
             Some(Hover {
-                contents: tower_lsp::lsp_types::HoverContents::Scalar(
-                    tower_lsp::lsp_types::MarkedString::String(format!(
+                contents: tower_lsp_server::lsp_types::HoverContents::Scalar(
+                    tower_lsp_server::lsp_types::MarkedString::String(format!(
                         "(`pike-lsp` placeholder hover) {kind:?} `{target}`"
                     )),
                 ),
@@ -118,7 +118,7 @@ impl Analysis {
         self.with(uri, |doc| {
             let ast = doc.ast.as_ref()?;
             ast.declaration_of(&target).and_then(|(l, c)| {
-                Url::parse(uri).ok().map(|parsed| {
+                uri.parse::<Uri>().ok().map(|parsed| {
                     GotoDefinitionResponse::Scalar(Location {
                         uri: parsed,
                         range: Range {
@@ -153,7 +153,7 @@ impl Analysis {
         .unwrap_or_default()
         .into_iter()
         .map(|(l, c, len)| Location {
-            uri: Url::parse(uri).expect("valid uri in analysis"),
+            uri: uri.parse::<Uri>().expect("valid uri in analysis"),
             range: Range {
                 start: Position {
                     line: l as u32,
@@ -178,7 +178,7 @@ impl Analysis {
                     name,
                     kind,
                     location: Location {
-                        uri: Url::parse(uri).expect("valid uri"),
+                        uri: uri.parse::<Uri>().expect("valid uri"),
                         range: Range {
                             start: Position {
                                 line: l as u32,
@@ -203,7 +203,7 @@ impl Analysis {
     /// directive set is sourced from Pike 8.0.1116's
     /// `refdoc/preprocessor.xml`
     /// `<section title="Preprocessor Directives">`.
-    pub fn diagnostics(&self, uri: &str) -> Vec<tower_lsp::lsp_types::Diagnostic> {
+    pub fn diagnostics(&self, uri: &str) -> Vec<tower_lsp_server::lsp_types::Diagnostic> {
         self.with(uri, |d| {
             let mut out = Vec::new();
             if let Some(tree) = &d.tree {
@@ -377,11 +377,11 @@ fn collect(node: Node, src: &[u8], flat: &mut Vec<AstNode>) {
     });
 }
 
-fn collect_parse_errors(node: Node, src: &[u8], out: &mut Vec<tower_lsp::lsp_types::Diagnostic>) {
+fn collect_parse_errors(node: Node, src: &[u8], out: &mut Vec<tower_lsp_server::lsp_types::Diagnostic>) {
     if node.is_error() || node.is_missing() {
         let start = node.start_position();
         let end = node.end_position();
-        out.push(tower_lsp::lsp_types::Diagnostic {
+        out.push(tower_lsp_server::lsp_types::Diagnostic {
             range: Range {
                 start: Position {
                     line: start.row as u32,
@@ -392,8 +392,8 @@ fn collect_parse_errors(node: Node, src: &[u8], out: &mut Vec<tower_lsp::lsp_typ
                     character: end.column as u32,
                 },
             },
-            severity: Some(tower_lsp::lsp_types::DiagnosticSeverity::ERROR),
-            code: Some(tower_lsp::lsp_types::NumberOrString::String(
+            severity: Some(tower_lsp_server::lsp_types::DiagnosticSeverity::ERROR),
+            code: Some(tower_lsp_server::lsp_types::NumberOrString::String(
                 "PIKE0000".to_string(),
             )),
             source: Some("pike-lsp".to_string()),
@@ -410,7 +410,7 @@ fn collect_parse_errors(node: Node, src: &[u8], out: &mut Vec<tower_lsp::lsp_typ
     }
 }
 
-fn collect_preprocessor_diagnostics(text: &str, out: &mut Vec<tower_lsp::lsp_types::Diagnostic>) {
+fn collect_preprocessor_diagnostics(text: &str, out: &mut Vec<tower_lsp_server::lsp_types::Diagnostic>) {
     // Pike 8.0.1116 preprocessor directive set, sourced from
     // pikelang/Pike/refdoc/preprocessor.xml
     // <section title="Preprocessor Directives">. The leading `#`
@@ -439,7 +439,7 @@ fn collect_preprocessor_diagnostics(text: &str, out: &mut Vec<tower_lsp::lsp_typ
         if KNOWN.iter().any(|k| k.eq_ignore_ascii_case(head)) {
             continue;
         }
-        out.push(tower_lsp::lsp_types::Diagnostic {
+        out.push(tower_lsp_server::lsp_types::Diagnostic {
             range: Range {
                 start: Position {
                     line: line_idx as u32,
@@ -450,8 +450,8 @@ fn collect_preprocessor_diagnostics(text: &str, out: &mut Vec<tower_lsp::lsp_typ
                     character: line.len() as u32,
                 },
             },
-            severity: Some(tower_lsp::lsp_types::DiagnosticSeverity::WARNING),
-            code: Some(tower_lsp::lsp_types::NumberOrString::String(
+            severity: Some(tower_lsp_server::lsp_types::DiagnosticSeverity::WARNING),
+            code: Some(tower_lsp_server::lsp_types::NumberOrString::String(
                 "PIKE0002".to_string(),
             )),
             source: Some("pike-lsp".to_string()),

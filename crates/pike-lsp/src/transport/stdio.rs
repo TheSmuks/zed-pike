@@ -1,6 +1,6 @@
 // stdio transport: JSON-RPC 2.0 over stdin/stdout.
 
-use tower_lsp::Server;
+use tower_lsp_server::Server;
 
 use crate::service::build_service;
 
