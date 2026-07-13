@@ -13,19 +13,23 @@
 #   3. LSP            build pike-lsp + drive initialize/didOpen/hover/documentSymbol
 #                     over stdio; enforce the RSS budget from docs/perf.md
 #   4. Grammar        (best-effort) tree-sitter parse of fixtures/ if tooling present
+#   5. Zed (opt-in)   --zed-check runs Zed's OWN zed-extension CLI (extension_cli)
+#                     for ground-truth install validation (compile + grammar load
+#                     + query compile). Heavy first build; see zed-extension-check.sh
 #
-# Usage: scripts/verify.sh [--no-lsp] [--no-grammar]
+# Usage: scripts/verify.sh [--no-lsp] [--no-grammar] [--zed-check]
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 RSS_BUDGET_MB="${PIKE_LSP_MAX_RSS_MB:-80}"   # docs/perf.md: idle stdio < 80 MiB
-DO_LSP=1; DO_GRAMMAR=1
+DO_LSP=1; DO_GRAMMAR=1; DO_ZED=0
 for a in "$@"; do
   case "$a" in
     --no-lsp) DO_LSP=0 ;;
     --no-grammar) DO_GRAMMAR=0 ;;
+    --zed-check) DO_ZED=1 ;;   # authoritative: run Zed's own zed-extension CLI
   esac
 done
 
@@ -109,6 +113,18 @@ if [ "$DO_GRAMMAR" = 1 ]; then
   fi
 else
   stage 4 "Grammar (skipped: --no-grammar)"
+fi
+
+# ---------------------------------------------------------------------------
+if [ "$DO_ZED" = 1 ]; then
+  stage 5 "Zed authoritative check (zed-extension CLI)"
+  if bash scripts/zed-extension-check.sh; then
+    pass "Zed's own extension_cli validated compile + grammar load + query compile"
+  else
+    fail "zed-extension CLI rejected the extension (Zed would too)"
+  fi
+else
+  stage 5 "Zed authoritative check (skipped; pass --zed-check to run Zed's own CLI)"
 fi
 
 # ---------------------------------------------------------------------------
