@@ -11,6 +11,24 @@ Each release section lists changes by their conventional-commit type:
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-13
+
+### Changed
+- Modernized the whole toolchain to latest usable versions: `zed_extension_api`
+  0.6 → 0.7, `tree-sitter` 0.25 → 0.26 (matches Zed's own 0.26.9 runtime), and
+  every other crate to latest.
+- Migrated the language server from the frozen `tower-lsp` 0.20 to the
+  maintained `tower-lsp-server` 0.21 (`lsp-types` 0.97, `Uri` API).
+- Re-pinned the `tree-sitter-pike` grammar to v1.3.1 (ABI 15,
+  `a8bc7e3d6064f67e05b35cd9d8406c7a41059131`), in the extension manifest and the
+  `pike-lsp` build script.
+
+### Added
+- Headless verification harness (`scripts/verify.sh`, `scripts/lsp_smoke.py`)
+  and the authoritative `zed-extension` CLI check (`scripts/zed-extension-check.sh`).
+- Cross-platform install scripts (`scripts/install.sh`, `scripts/install.ps1`).
+- `AGENTS.md` and a root `ARCHITECTURE.md`.
+
 ## [0.0.3] - 2026-06-23
 
 ### Fixed
