@@ -8,7 +8,7 @@ repository = "https://github.com/TheSmuks/zed-pike"
 
 [grammars.pike]
 repository = "https://github.com/TheSmuks/tree-sitter-pike"
-commit = "adacb8165dc9c7db9ca2f8d15fcb73b3c7ea8980"
+commit = "a8bc7e3d6064f67e05b35cd9d8406c7a41059131"
 
 [language_servers.pike-lsp]
 name = "Pike LSP"
