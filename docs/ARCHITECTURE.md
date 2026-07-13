@@ -99,7 +99,8 @@ Native language server, built from the same workspace. Subcommands:
 | `daemon`   | Multi-session server with idle timeout. | no |
 | `ssh`      | Bridge to a `ssh -R streamlocal:...` session. | no |
 
-The transport layer uses `tower-lsp`'s `LspService`. The analysis layer
+The transport layer uses `tower-lsp-server`'s `LspService` (the maintained
+successor to the frozen `tower-lsp`; tracks current `lsp-types`). The analysis layer
 strips byte ranges from the tree-sitter tree so downstream queries are
 insulated from raw text changes (the "AST shield"). A RSS resource guard
 runs in `main` and exits the process when its memory budget is exceeded.
