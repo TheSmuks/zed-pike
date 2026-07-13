@@ -377,7 +377,11 @@ fn collect(node: Node, src: &[u8], flat: &mut Vec<AstNode>) {
     });
 }
 
-fn collect_parse_errors(node: Node, src: &[u8], out: &mut Vec<tower_lsp_server::lsp_types::Diagnostic>) {
+fn collect_parse_errors(
+    node: Node,
+    src: &[u8],
+    out: &mut Vec<tower_lsp_server::lsp_types::Diagnostic>,
+) {
     if node.is_error() || node.is_missing() {
         let start = node.start_position();
         let end = node.end_position();
@@ -410,7 +414,10 @@ fn collect_parse_errors(node: Node, src: &[u8], out: &mut Vec<tower_lsp_server::
     }
 }
 
-fn collect_preprocessor_diagnostics(text: &str, out: &mut Vec<tower_lsp_server::lsp_types::Diagnostic>) {
+fn collect_preprocessor_diagnostics(
+    text: &str,
+    out: &mut Vec<tower_lsp_server::lsp_types::Diagnostic>,
+) {
     // Pike 8.0.1116 preprocessor directive set, sourced from
     // pikelang/Pike/refdoc/preprocessor.xml
     // <section title="Preprocessor Directives">. The leading `#`
